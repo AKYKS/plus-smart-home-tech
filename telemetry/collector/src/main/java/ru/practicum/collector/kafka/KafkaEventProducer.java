@@ -47,16 +47,18 @@ public class KafkaEventProducer implements AutoCloseable {
                 value
         );
         Future<RecordMetadata> futureResult = producer.send(record);
+
         try {
             RecordMetadata metadata = futureResult.get();
-            log.info("record saved: topic '{}', partition '{}', offset '{}', key '{}'",
+            log.debug("record saved: topic={}, partition={}, offset={}, key={}",
                     metadata.topic(), metadata.partition(), metadata.offset(), key);
         } catch (ExecutionException e) {
-            log.warn("failed to send to topic '{}', key '{}'", topic, key, e);
-            throw e;
+            Throwable cause = e.getCause();
+            log.error("failed to send record to topic={}, key={}: {}",
+                    topic, key, cause != null ? cause.getMessage() : "unknown error", cause);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw e;
+            log.warn("send interrupted for topic={}, key={}", topic, key, e);
         }
     }
 }
