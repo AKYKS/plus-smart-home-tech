@@ -1,0 +1,16 @@
+server:
+  port: 8080
+
+spring:
+  main:
+    banner-mode: OFF
+
+logging:
+  level:
+    org:
+      zalando:
+        logbook:
+          Logbook: TRACE
+
+kafka:
+  bootstrap-servers: localhost:9092
