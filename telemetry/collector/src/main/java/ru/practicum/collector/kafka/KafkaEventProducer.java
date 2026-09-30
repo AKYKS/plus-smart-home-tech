@@ -37,8 +37,7 @@ public class KafkaEventProducer implements AutoCloseable {
         producer.close(CLOSE_DURATION);
     }
 
-    public void send(String topic, Instant timestamp, String key, SpecificRecordBase value)
-            throws ExecutionException, InterruptedException {
+    public void send(String topic, Instant timestamp, String key, SpecificRecordBase value) {
         ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
                 topic,
                 null,
