@@ -37,7 +37,8 @@ public class KafkaEventProducer implements AutoCloseable {
         producer.close(CLOSE_DURATION);
     }
 
-    public void send(String topic, Instant timestamp, String key, SpecificRecordBase value) {
+    public void send(String topic, Instant timestamp, String key, SpecificRecordBase value)
+            throws ExecutionException, InterruptedException {
         ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
                 topic,
                 null,
@@ -46,17 +47,16 @@ public class KafkaEventProducer implements AutoCloseable {
                 value
         );
         Future<RecordMetadata> futureResult = producer.send(record);
-        flush(futureResult, record, topic);
-    }
-
-    private void flush(Future<RecordMetadata> futureResult, ProducerRecord<String, SpecificRecordBase> record, String topic) {
-        producer.flush();
         try {
             RecordMetadata metadata = futureResult.get();
-            log.info("record '{}' was successfully saved: topic '{}', partition '{}', offset '{}' ",
-                    record, metadata.topic(), metadata.partition(), metadata.offset());
-        } catch (InterruptedException | ExecutionException e) {
-            log.warn("couldn't record '{}' in topic '{}'", record, topic, e);
+            log.info("record saved: topic '{}', partition '{}', offset '{}', key '{}'",
+                    metadata.topic(), metadata.partition(), metadata.offset(), key);
+        } catch (ExecutionException e) {
+            log.warn("failed to send to topic '{}', key '{}'", topic, key, e);
+            throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw e;
         }
     }
 }

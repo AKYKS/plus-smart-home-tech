@@ -13,4 +13,7 @@ logging:
           Logbook: TRACE
 
 kafka:
-  bootstrap-servers: localhost:9092
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  topics:
+    hub-events: telemetry.hubs.v1
+    sensor-events: telemetry.sensors.v1

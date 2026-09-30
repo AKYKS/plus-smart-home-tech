@@ -12,18 +12,17 @@ import java.io.IOException;
 
 public class AvroSerializer implements Serializer<SpecificRecordBase> {
     private final EncoderFactory encoderFactory = EncoderFactory.get();
-    private BinaryEncoder encoder;
 
     @Override
-    public byte[] serialize(String s, SpecificRecordBase record) {
+    public byte[] serialize(String topic, SpecificRecordBase record) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             DatumWriter<SpecificRecordBase> writer = new SpecificDatumWriter<>(record.getSchema());
-            encoder = encoderFactory.binaryEncoder(outputStream, encoder);
+            BinaryEncoder encoder = encoderFactory.binaryEncoder(outputStream, null);
             writer.write(record, encoder);
             encoder.flush();
             return outputStream.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to serialize Avro record", e);
         }
     }
 }

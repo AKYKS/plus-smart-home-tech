@@ -15,8 +15,7 @@ import static ru.practicum.collector.dto.sensor.SensorTypeNames.*;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXISTING_PROPERTY,
-        property = "type",
-        defaultImpl = SensorEventType.class
+        property = "type"
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ClimateSensorEvent.class, name = CLIMATE_SENSOR_EVENT),
@@ -33,7 +32,7 @@ public abstract class SensorEvent {
     private String id;
     @NotBlank
     private String hubId;
-    private final Instant timestamp = Instant.now();
+    private Instant timestamp = Instant.now();
 
     @NotNull
     public abstract SensorEventType getType();
