@@ -13,6 +13,7 @@ import ru.practicum.serialization.AvroSerializer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -37,7 +38,12 @@ public class KafkaEventProducer implements AutoCloseable {
         producer.close(CLOSE_DURATION);
     }
 
-    public void send(String topic, Instant timestamp, String key, SpecificRecordBase value) {
+    public CompletableFuture<RecordMetadata> send(
+            String topic,
+            Instant timestamp,
+            String key,
+            SpecificRecordBase value
+    ) {
         ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
                 topic,
                 null,
@@ -45,20 +51,22 @@ public class KafkaEventProducer implements AutoCloseable {
                 key,
                 value
         );
-        Future<RecordMetadata> futureResult = producer.send(record);
 
-        try {
-            RecordMetadata metadata = futureResult.get();
-            log.debug("record saved: topic={}, partition={}, offset={}, key={}",
-                    metadata.topic(), metadata.partition(), metadata.offset(), key);
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            log.error("failed to send record to topic={}, key={}: {}",
-                    topic, key, cause != null ? cause.getMessage() : "unknown error", cause);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            log.warn("send interrupted for topic={}, key={}", topic, key, e);
-        }
+        CompletableFuture<RecordMetadata> future = new CompletableFuture<>();
+
+        producer.send(record, (metadata, exception) -> {
+            if (exception != null) {
+                future.completeExceptionally(exception);
+                log.error("failed to send record to topic={}, key={}: {}",
+                        topic, key, exception.getMessage(), exception);
+            } else {
+                log.debug("record saved: topic={}, partition={}, offset={}, key={}",
+                        metadata.topic(), metadata.partition(), metadata.offset(), key);
+                future.complete(metadata);
+            }
+        });
+
+        return future;
     }
 }
 

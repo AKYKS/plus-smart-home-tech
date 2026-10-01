@@ -1,5 +1,6 @@
 package ru.practicum.collector.dto.hub.device.added;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -11,6 +12,7 @@ import ru.practicum.collector.dto.hub.HubEventType;
 @ToString(callSuper = true)
 public class DeviceAddedHubEvent extends HubEvent {
     private String id;
+    @NotNull(message = "deviceType is required")
     private DeviceType deviceType;
 
     @Override

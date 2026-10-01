@@ -1,6 +1,7 @@
 package ru.practicum.collector.service.sensor;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.beans.factory.annotation.Value;
 import ru.practicum.collector.dto.sensor.SensorEvent;
@@ -9,10 +10,11 @@ import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
 import java.time.Instant;
 
+@Slf4j
 @RequiredArgsConstructor
 public abstract class SensorEventHandlerBase<P extends SpecificRecordBase> implements SensorEventHandler {
     @Value("${kafka.topics.sensor-events}")
-    private String TOPIC;
+    private final String topic;
 
     private final KafkaEventProducer producer;
 
@@ -29,6 +31,10 @@ public abstract class SensorEventHandlerBase<P extends SpecificRecordBase> imple
                 .setTimestamp(timestamp)
                 .setPayload(getPayload(event))
                 .build();
-        producer.send(TOPIC, timestamp, hubId, eventAvro);
+        producer.send(topic, timestamp, hubId, eventAvro)
+                .exceptionally(ex -> {
+                    log.warn("Failed to send sensor event id={}, hubId={}", id, hubId, ex);
+                    return null;
+                });
     }
 }

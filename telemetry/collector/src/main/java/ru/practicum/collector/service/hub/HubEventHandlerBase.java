@@ -1,6 +1,7 @@
 package ru.practicum.collector.service.hub;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.beans.factory.annotation.Value;
 import ru.practicum.collector.dto.hub.HubEvent;
@@ -9,10 +10,11 @@ import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 
 import java.time.Instant;
 
+@Slf4j
 @RequiredArgsConstructor
 public abstract class HubEventHandlerBase<P extends SpecificRecordBase> implements HubEventHandler {
     @Value("${kafka.topics.hub-events}")
-    private String TOPIC;
+    private final String topic;
 
     private final KafkaEventProducer producer;
 
@@ -27,6 +29,11 @@ public abstract class HubEventHandlerBase<P extends SpecificRecordBase> implemen
                 .setTimestamp(timestamp)
                 .setPayload(getPayload(event))
                 .build();
-        producer.send(TOPIC, timestamp, hubId, eventAvro);
+
+        producer.send(topic, timestamp, hubId, eventAvro)
+                .exceptionally(ex -> {
+                    log.warn("Failed to send hub event hubId={}", hubId, ex);
+                    return null;
+                });
     }
 }

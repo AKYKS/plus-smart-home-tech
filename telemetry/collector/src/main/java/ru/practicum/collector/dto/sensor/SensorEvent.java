@@ -32,6 +32,7 @@ public abstract class SensorEvent {
     private String id;
     @NotBlank
     private String hubId;
+    @NotNull(message = "timestamp is required: event time must be provided by the device")
     private Instant timestamp = Instant.now();
 
     @NotNull

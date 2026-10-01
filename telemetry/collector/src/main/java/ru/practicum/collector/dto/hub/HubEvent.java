@@ -19,8 +19,7 @@ import static ru.practicum.collector.dto.hub.HubTypeNames.*;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXISTING_PROPERTY,
-        property = "type",
-        defaultImpl = HubEventType.class
+        property = "type"
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = DeviceAddedHubEvent.class, name = DEVICE_ADDED_EVENT),
@@ -34,7 +33,8 @@ import static ru.practicum.collector.dto.hub.HubTypeNames.*;
 public abstract class HubEvent {
     @NotBlank
     private String hubId;
-    private final Instant timestamp = Instant.now();
+    @NotNull(message = "timestamp is required: event time must be provided by the device")
+    private Instant timestamp = Instant.now();
 
     @NotNull
     public abstract HubEventType getType();
