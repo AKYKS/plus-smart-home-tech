@@ -1,6 +1,6 @@
 package ru.practicum.collector.service.hub;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.practicum.collector.dto.hub.HubEvent;
 import ru.practicum.collector.dto.hub.HubTypeNames;
@@ -18,9 +18,12 @@ import java.util.List;
 @Component(value = HubTypeNames.SCENARIO_ADDED_EVENT)
 @SuppressWarnings("unused")
 public class ScenarioAddedHubEventHandler extends HubEventHandlerBase<ScenarioAddedEventAvro> {
-    @Autowired
-    public ScenarioAddedHubEventHandler(KafkaEventProducer producer) {
-        super(producer);
+
+    public ScenarioAddedHubEventHandler(
+            @Value("${kafka.topics.hub-events}") String topic,
+            KafkaEventProducer producer
+    ) {
+        super(topic, producer);
     }
 
     @Override

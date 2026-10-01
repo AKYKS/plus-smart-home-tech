@@ -1,6 +1,6 @@
 package ru.practicum.collector.service.hub;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.practicum.collector.dto.hub.HubEvent;
 import ru.practicum.collector.dto.hub.HubTypeNames;
@@ -11,9 +11,12 @@ import ru.yandex.practicum.kafka.telemetry.event.ScenarioRemovedEventAvro;
 @Component(value = HubTypeNames.SCENARIO_REMOVED_EVENT)
 @SuppressWarnings("unused")
 public class ScenarioRemovedHubEventHandler extends HubEventHandlerBase<ScenarioRemovedEventAvro> {
-    @Autowired
-    public ScenarioRemovedHubEventHandler(KafkaEventProducer producer) {
-        super(producer);
+
+    public ScenarioRemovedHubEventHandler(
+            @Value("${kafka.topics.hub-events}") String topic,
+            KafkaEventProducer producer
+    ) {
+        super(topic, producer);
     }
 
     @Override
