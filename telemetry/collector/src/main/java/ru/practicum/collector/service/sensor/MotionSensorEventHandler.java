@@ -1,6 +1,6 @@
 package ru.practicum.collector.service.sensor;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.practicum.collector.dto.sensor.MotionSensorEvent;
 import ru.practicum.collector.dto.sensor.SensorEvent;
@@ -11,9 +11,12 @@ import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
 @Component(value = SensorTypeNames.MOTION_SENSOR_EVENT)
 @SuppressWarnings("unused")
 public class MotionSensorEventHandler extends SensorEventHandlerBase<MotionSensorAvro> {
-    @Autowired
-    public MotionSensorEventHandler(KafkaEventProducer producer) {
-        super(producer);
+
+    public MotionSensorEventHandler(
+            @Value("${kafka.topics.sensor-events}") String topic,
+            KafkaEventProducer producer
+    ) {
+        super(topic, producer);
     }
 
     @Override

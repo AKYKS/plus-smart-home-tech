@@ -1,6 +1,6 @@
 package ru.practicum.collector.service.sensor;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.practicum.collector.dto.sensor.SensorEvent;
 import ru.practicum.collector.dto.sensor.SensorTypeNames;
@@ -11,9 +11,12 @@ import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 @Component(value = SensorTypeNames.TEMPERATURE_SENSOR_EVENT)
 @SuppressWarnings("unused")
 public class TemperatureSensorEventHandler extends SensorEventHandlerBase<TemperatureSensorAvro> {
-    @Autowired
-    public TemperatureSensorEventHandler(KafkaEventProducer producer) {
-        super(producer);
+
+    public TemperatureSensorEventHandler(
+            @Value("${kafka.topics.sensor-events}") String topic,
+            KafkaEventProducer producer
+    ) {
+        super(topic, producer);
     }
 
     @Override

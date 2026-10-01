@@ -1,6 +1,6 @@
 package ru.practicum.collector.service.sensor;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.practicum.collector.dto.sensor.SensorEvent;
 import ru.practicum.collector.dto.sensor.SensorTypeNames;
@@ -11,9 +11,12 @@ import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
 @Component(value = SensorTypeNames.SWITCH_SENSOR_EVENT)
 @SuppressWarnings("unused")
 public class SwitchSensorEventHandler extends SensorEventHandlerBase<SwitchSensorAvro> {
-    @Autowired
-    public SwitchSensorEventHandler(KafkaEventProducer producer) {
-        super(producer);
+
+    public SwitchSensorEventHandler(
+            @Value("${kafka.topics.sensor-events}") String topic,
+            KafkaEventProducer producer
+    ) {
+        super(topic, producer);
     }
 
     @Override
