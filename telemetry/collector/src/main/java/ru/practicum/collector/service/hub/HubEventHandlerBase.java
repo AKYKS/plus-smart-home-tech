@@ -1,10 +1,11 @@
 package ru.practicum.collector.service.hub;
 
+import com.google.protobuf.Timestamp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.beans.factory.annotation.Value;
-import ru.practicum.collector.dto.hub.HubEvent;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.practicum.collector.kafka.KafkaEventProducer;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 
@@ -18,19 +19,20 @@ public abstract class HubEventHandlerBase<P extends SpecificRecordBase> implemen
 
     private final KafkaEventProducer producer;
 
-    protected abstract P getPayload(HubEvent event);
+    protected abstract P getPayload(HubEventProto event);
 
     @Override
-    public void handle(HubEvent event) {
+    public void handle(HubEventProto event) {
         String hubId = event.getHubId();
-        Instant timestamp = event.getTimestamp();
+        Timestamp timestamp = event.getTimestamp();
+        Instant instant = Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
         HubEventAvro eventAvro = HubEventAvro.newBuilder()
                 .setHubId(hubId)
-                .setTimestamp(timestamp)
+                .setTimestamp(instant)
                 .setPayload(getPayload(event))
                 .build();
 
-        producer.send(topic, timestamp, hubId, eventAvro)
+        producer.send(topic, instant, hubId, eventAvro)
                 .exceptionally(ex -> {
                     log.warn("Failed to send hub event hubId={}", hubId, ex);
                     return null;
