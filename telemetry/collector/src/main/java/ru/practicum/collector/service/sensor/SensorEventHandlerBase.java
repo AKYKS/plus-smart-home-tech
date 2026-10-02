@@ -1,11 +1,12 @@
 package ru.practicum.collector.service.sensor;
 
+import com.google.protobuf.Timestamp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.beans.factory.annotation.Value;
-import ru.practicum.collector.dto.sensor.SensorEvent;
 import ru.practicum.collector.kafka.KafkaEventProducer;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
 import java.time.Instant;
@@ -18,17 +19,17 @@ public abstract class SensorEventHandlerBase<P extends SpecificRecordBase> imple
 
     private final KafkaEventProducer producer;
 
-    protected abstract P getPayload(SensorEvent event);
+    protected abstract P getPayload(SensorEventProto event);
 
     @Override
-    public void handle(SensorEvent event) {
+    public void handle(SensorEventProto event) {
         String hubId = event.getHubId();
-        String id = event.getId();
-        Instant timestamp = event.getTimestamp();
+        Timestamp timestamp = event.getTimestamp();
+        Instant instant = Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
         SensorEventAvro eventAvro = SensorEventAvro.newBuilder()
-                .setId(id)
-                .setHubId(hubId)
-                .setTimestamp(timestamp)
+                .setId(event.getId())
+                .setHubId(event.getHubId())
+                .setTimestamp(instant)
                 .setPayload(getPayload(event))
                 .build();
         producer.send(topic, timestamp, hubId, eventAvro)

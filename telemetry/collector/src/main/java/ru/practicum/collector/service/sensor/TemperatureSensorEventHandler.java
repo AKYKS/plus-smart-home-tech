@@ -2,13 +2,12 @@ package ru.practicum.collector.service.sensor;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.practicum.collector.dto.sensor.SensorEvent;
-import ru.practicum.collector.dto.sensor.SensorTypeNames;
-import ru.practicum.collector.dto.sensor.TemperatureSensorEvent;
 import ru.practicum.collector.kafka.KafkaEventProducer;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.TemperatureSensorProto;
 import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 
-@Component(value = SensorTypeNames.TEMPERATURE_SENSOR_EVENT)
+@Component
 @SuppressWarnings("unused")
 public class TemperatureSensorEventHandler extends SensorEventHandlerBase<TemperatureSensorAvro> {
 
@@ -20,8 +19,13 @@ public class TemperatureSensorEventHandler extends SensorEventHandlerBase<Temper
     }
 
     @Override
-    protected TemperatureSensorAvro getPayload(SensorEvent event) {
-        TemperatureSensorEvent temperatureSensorEvent = (TemperatureSensorEvent) event;
+    public SensorEventProto.PayloadCase getMessageType() {
+        return SensorEventProto.PayloadCase.TEMPERATURE_SENSOR;
+    }
+
+    @Override
+    protected TemperatureSensorAvro getPayload(SensorEventProto event) {
+        TemperatureSensorProto temperatureSensorEvent = event.getTemperatureSensor();
         return TemperatureSensorAvro.newBuilder()
                 .setTemperatureC(temperatureSensorEvent.getTemperatureC())
                 .setTemperatureF(temperatureSensorEvent.getTemperatureF())
