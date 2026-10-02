@@ -23,16 +23,17 @@ public abstract class SensorEventHandlerBase<P extends SpecificRecordBase> imple
 
     @Override
     public void handle(SensorEventProto event) {
+        String id = event.getId();
         String hubId = event.getHubId();
         Timestamp timestamp = event.getTimestamp();
         Instant instant = Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
         SensorEventAvro eventAvro = SensorEventAvro.newBuilder()
-                .setId(event.getId())
-                .setHubId(event.getHubId())
+                .setId(id)
+                .setHubId(hubId)
                 .setTimestamp(instant)
                 .setPayload(getPayload(event))
                 .build();
-        producer.send(topic, timestamp, hubId, eventAvro)
+        producer.send(topic, instant, hubId, eventAvro)
                 .exceptionally(ex -> {
                     log.warn("Failed to send sensor event id={}, hubId={}", id, hubId, ex);
                     return null;
