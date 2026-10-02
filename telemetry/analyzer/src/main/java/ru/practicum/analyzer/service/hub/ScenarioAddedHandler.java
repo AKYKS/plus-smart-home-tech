@@ -3,6 +3,7 @@ package ru.practicum.analyzer.service.hub;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.analyzer.entity.*;
 import ru.practicum.analyzer.repository.ActionRepository;
 import ru.practicum.analyzer.repository.ConditionRepository;
@@ -31,12 +32,16 @@ public class ScenarioAddedHandler implements HubEventHandler {
     }
 
     @Override
+    @Transactional
     public void handle(HubEventAvro event) {
         ScenarioAddedEventAvro scenarioAddedEvent = (ScenarioAddedEventAvro) event.getPayload();
-        Scenario scenario = buildAndSaveScenario(event.getHubId(), scenarioAddedEvent.getName());
+        Scenario scenario = Scenario.builder()
+                .hubId(event.getHubId())
+                .name(scenarioAddedEvent.getName())
+                .build();
         saveConditions(scenario, scenarioAddedEvent.getConditions());
         saveActions(scenario, scenarioAddedEvent.getActions());
-        saveScenario(scenario);
+        scenarioRepository.save(scenario);
     }
 
     private Scenario buildAndSaveScenario(String hubId, String name) {
