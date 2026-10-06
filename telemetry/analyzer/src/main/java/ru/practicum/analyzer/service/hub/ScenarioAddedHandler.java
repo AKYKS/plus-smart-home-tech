@@ -14,6 +14,7 @@ import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioConditionAvro;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -34,23 +35,34 @@ public class ScenarioAddedHandler implements HubEventHandler {
     @Override
     @Transactional
     public void handle(HubEventAvro event) {
-        ScenarioAddedEventAvro scenarioAddedEvent = (ScenarioAddedEventAvro) event.getPayload();
-        Scenario scenario = Scenario.builder()
-                .hubId(event.getHubId())
-                .name(scenarioAddedEvent.getName())
-                .build();
-        saveConditions(scenario, scenarioAddedEvent.getConditions());
-        saveActions(scenario, scenarioAddedEvent.getActions());
-        scenarioRepository.save(scenario);
+        ScenarioAddedEventAvro payload = (ScenarioAddedEventAvro) event.getPayload();
+        scenarioRepository.findByHubIdAndName(event.getHubId(), payload.getName())
+                .ifPresentOrElse(
+                        existing -> updateScenario(existing, payload),
+                        () -> createScenario(event.getHubId(), payload)
+                );
     }
 
-    private Scenario buildAndSaveScenario(String hubId, String name) {
-        return scenarioRepository.save(
+    private void createScenario(String hubId, ScenarioAddedEventAvro payload) {
+        Scenario scenario = scenarioRepository.save(
                 Scenario.builder()
                         .hubId(hubId)
-                        .name(name)
+                        .name(payload.getName())
+                        .conditions(new ArrayList<>())
+                        .actions(new ArrayList<>())
                         .build()
         );
+        saveConditions(scenario, payload.getConditions());
+        saveActions(scenario, payload.getActions());
+        log.trace("scenario saved: {}", scenario);
+    }
+
+    private void updateScenario(Scenario scenario, ScenarioAddedEventAvro payload) {
+        scenario.getConditions().clear();
+        scenario.getActions().clear();
+        saveConditions(scenario, payload.getConditions());
+        saveActions(scenario, payload.getActions());
+        log.trace("scenario updated: {}", scenario);
     }
 
     private void saveConditions(Scenario scenario, List<ScenarioConditionAvro> conditions) {
@@ -134,10 +146,5 @@ public class ScenarioAddedHandler implements HubEventHandler {
                         .action(action)
                         .build()
         );
-    }
-
-    private void saveScenario(Scenario scenario) {
-        scenarioRepository.save(scenario);
-        log.trace("scenario saved: {}", scenario);
     }
 }

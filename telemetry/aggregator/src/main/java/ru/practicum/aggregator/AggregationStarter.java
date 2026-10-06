@@ -35,6 +35,10 @@ public class AggregationStarter {
             while (true) {
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(consumerConfiguration.getAttemptTimeout());
 
+                if (records.isEmpty()) {
+                    continue;
+                }
+
                 for (ConsumerRecord<String, SpecificRecordBase> record : records) {
                     SensorEventAvro eventAvro = (SensorEventAvro) record.value();
                     Optional<SensorsSnapshotAvro> snapshot = aggregationService.updateState(eventAvro);
@@ -47,6 +51,7 @@ public class AggregationStarter {
                         producer.send(producerRecord);
                     }
                 }
+
                 consumer.commitSync();
             }
         } catch (WakeupException ignored) {

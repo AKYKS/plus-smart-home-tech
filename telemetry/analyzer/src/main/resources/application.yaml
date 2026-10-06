@@ -10,9 +10,12 @@ spring:
     username: dbuser
     password: 12345
 
+  sql:
+    init:
+      mode: always
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         format_sql: true
@@ -36,6 +39,7 @@ kafka:
         client.id: analyzer-hub-consumer
         key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
         value.deserializer: ru.practicum.deserialization.HubEventDeserializer
+        enable.auto.commit: false
       topics:
         - telemetry.hubs.v1
     snapshot:
@@ -45,5 +49,6 @@ kafka:
         client.id: analyzer-snapshot-consumer
         key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
         value.deserializer: ru.practicum.deserialization.SensorsSnapshotDeserializer
+        enable.auto.commit: false
       topics:
         - telemetry.snapshots.v1

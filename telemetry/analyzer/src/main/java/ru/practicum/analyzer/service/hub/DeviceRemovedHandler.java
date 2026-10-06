@@ -26,7 +26,11 @@ public class DeviceRemovedHandler implements HubEventHandler {
     }
 
     private void removeScenario(String id) {
-        sensorRepository.deleteById(id);
-        log.trace("sensor removed. id: {}", id);
+        if (sensorRepository.existsById(id)) {
+            sensorRepository.deleteById(id);
+            log.trace("Sensor removed. Id: {}", id);
+        } else {
+            log.trace("Sensor not found, nothing to remove. Id: {}", id);
+        }
     }
 }

@@ -12,7 +12,6 @@ import lombok.*;
 @Table(name = "actions")
 public class Action {
     @Id
-    @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "type")

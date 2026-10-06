@@ -13,6 +13,7 @@ kafka:
       client.id: aggregator-consumer
       key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value.deserializer: ru.practicum.deserialization.SensorEventDeserializer
+      enable.auto.commit: false
     topics:
       - telemetry.sensors.v1
     attempt-timeout-millis: 1000
