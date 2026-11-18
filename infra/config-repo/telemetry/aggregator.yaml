@@ -1,0 +1,22 @@
+server:
+  port: 8081
+
+kafka:
+  consumer:
+    properties:
+      bootstrap.servers: localhost:9092
+      group.id: aggregator-group
+      client.id: aggregator-consumer
+      key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value.deserializer: ru.practicum.deserialization.SensorEventDeserializer
+      enable.auto.commit: false
+    topics:
+      - telemetry.sensors.v1
+    attempt-timeout-millis: 1000
+  producer:
+    properties:
+      bootstrap.servers: localhost:9092
+      client.id: aggregator-producer
+      key.serializer: org.apache.kafka.common.serialization.StringSerializer
+      value.serializer: ru.practicum.serialization.AvroSerializer
+    topic: telemetry.snapshots.v1
